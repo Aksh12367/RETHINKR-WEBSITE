@@ -1,0 +1,162 @@
+[
+  {
+    "id": "goonj",
+    "name": "Goonj",
+    "tagline": "Turning urban discard into rural development currency",
+    "category": "textiles",
+    "focus": "Clothing, Textiles & Household Goods",
+    "logo_icon": "bi-heart-fill",
+    "color": "#e11d48",
+    "description": "Goonj is a pioneering Indian social enterprise that converts urban surplus into a powerful development resource for rural villages through initiatives like 'Vastra Samman' and 'Cloth for Work'.",
+    "accepted_items": [
+      "Old Clothes & Woolens",
+      "Bed sheets & Blankets",
+      "School Bags & Stationery",
+      "Utensils & Cookware",
+      "Footwear"
+    ],
+    "cities": "Pan-India (Delhi, Mumbai, Bengaluru, Kolkata, Chennai, Hyderabad, Pune, 30+ cities)",
+    "pickup_available": true,
+    "tax_exemption_80g": true,
+    "website": "https://goonj.org",
+    "verified": true,
+    "impact_metric": "Over 6,000 tonnes of discarded textiles repurposed into rural dignity packs annually."
+  },
+  {
+    "id": "chintan",
+    "name": "Chintan Environmental",
+    "tagline": "Pioneering responsible e-waste recycling & waste picker empowerment",
+    "category": "electronics",
+    "focus": "E-Waste, Gadgets & Toxic Materials",
+    "logo_icon": "bi-cpu-fill",
+    "color": "#7c3aed",
+    "description": "Chintan works on sustainable waste management, specializing in safe disposal and recycling of electrical and electronic waste while uplifting informal waste pickers.",
+    "accepted_items": [
+      "Broken Smartphones & Tablets",
+      "Laptops & Keyboards",
+      "Chargers & USB Cables",
+      "Batteries",
+      "Small Appliances"
+    ],
+    "cities": "Delhi NCR, Noida, Gurugram, Ghaziabad",
+    "pickup_available": true,
+    "tax_exemption_80g": true,
+    "website": "https://chintan-india.org",
+    "verified": true,
+    "impact_metric": "Safely diverted over 1,200 tonnes of hazardous toxic electronic waste from landfills."
+  },
+  {
+    "id": "saahas",
+    "name": "Saahas Zero Waste",
+    "tagline": "Holistic zero-waste solutions & circular resource recovery",
+    "category": "plastics",
+    "focus": "Dry Waste, Plastics & Cardboard",
+    "logo_icon": "bi-recycle",
+    "color": "#059669",
+    "description": "A socio-environmental enterprise committed to bringing circular economy principles into everyday practice. Saahas channels discarded plastics and cardboard back into industrial recycling streams.",
+    "accepted_items": [
+      "Bulk Corrugated Cardboard",
+      "PET Bottles & Milk Jugs",
+      "Plastic Food Containers",
+      "Office Paper",
+      "Packaging Bubble Wrap"
+    ],
+    "cities": "Bengaluru, Chennai, Hyderabad, Goa, Surat",
+    "pickup_available": true,
+    "tax_exemption_80g": true,
+    "website": "https://saahaszerowaste.com",
+    "verified": true,
+    "impact_metric": "Manages over 100 tonnes of dry municipal waste every day with a 98% resource recovery rate."
+  },
+  {
+    "id": "robinhood",
+    "name": "Robin Hood Army",
+    "tagline": "Zero-funds organization serving surplus food & essentials",
+    "category": "rubber_misc",
+    "focus": "Surplus Food, Ration & Reusable Containers",
+    "logo_icon": "bi-egg-fried",
+    "color": "#0284c7",
+    "description": "A volunteer-driven, zero-funds movement that distributes surplus food, groceries, and durable household essentials from restaurants and citizens to the less fortunate.",
+    "accepted_items": [
+      "Clean Takeaway Containers",
+      "Surplus Dry Groceries / Pulses",
+      "Clean Water Bottles",
+      "Reusable Bags"
+    ],
+    "cities": "400+ Cities across India and international chapters",
+    "pickup_available": true,
+    "tax_exemption_80g": false,
+    "website": "https://robinhoodarmy.com",
+    "verified": true,
+    "impact_metric": "Served over 120 million meals to underprivileged families without accepting monetary donations."
+  },
+  {
+    "id": "pratham_books",
+    "name": "Books For All (Pratham & Rotary)",
+    "tagline": "A book in every child's hand",
+    "category": "paper",
+    "focus": "Books, Paperbacks & Educational Supplies",
+    "logo_icon": "bi-book-half",
+    "color": "#d97706",
+    "description": "Distributes pre-loved storybooks, educational reading materials, and stationery to community libraries and government schools across rural India.",
+    "accepted_items": [
+      "Children's Storybooks",
+      "Educational Textbooks",
+      "Fiction & Non-fiction Books",
+      "Notebooks & Stationery",
+      "Magazines"
+    ],
+    "cities": "Delhi, Mumbai, Bengaluru, Pune, Lucknow, Jaipur",
+    "pickup_available": true,
+    "tax_exemption_80g": true,
+    "website": "https://prathambooks.org",
+    "verified": true,
+    "impact_metric": "Over 500,000 donated books delivered to village community reading clubs."
+  },
+  {
+    "id": "helpage",
+    "name": "HelpAge India",
+    "tagline": "Fighting for the rights & care of elderly elders",
+    "category": "textiles",
+    "focus": "Warm Blankets, Woolens & Mobility Aids",
+    "logo_icon": "bi-shield-heart-fill",
+    "color": "#b45309",
+    "description": "HelpAge India advocates for and cares for disadvantaged elderly citizens across India. They accept winter clothing, warm bedding, and healthcare assistance items.",
+    "accepted_items": [
+      "Woolen Sweaters & Cardigans",
+      "Thermal Blankets & Bedding",
+      "Walking Sticks & Canes",
+      "Clean Shawls",
+      "Adult Mobility Aids"
+    ],
+    "cities": "Pan-India across 26 states and 100+ districts",
+    "pickup_available": true,
+    "tax_exemption_80g": true,
+    "website": "https://helpageindia.org",
+    "verified": true,
+    "impact_metric": "Supporting over 2 million destitute senior citizens with healthcare and warmth."
+  },
+  {
+    "id": "wasted360",
+    "name": "Wasted 360 Solutions",
+    "tagline": "Closing the loop on non-recyclable urban discards",
+    "category": "rubber_misc",
+    "focus": "Denim, Footwear, Glass Bottles & Hard-to-Recycle Goods",
+    "logo_icon": "bi-arrow-clockwise",
+    "color": "#0f766e",
+    "description": "A circular lifestyle initiative collecting items municipal systems reject: worn footwear, broken ceramics, glass bottles, and denim to manufacture sustainable architectural and lifestyle products.",
+    "accepted_items": [
+      "Worn Footwear & Slippers",
+      "Glass Bottles & Jars",
+      "Scrap Denim",
+      "Inner Tubes & Rubber",
+      "Cosmetic Containers"
+    ],
+    "cities": "Chennai, Bengaluru, Coimbatore",
+    "pickup_available": true,
+    "tax_exemption_80g": true,
+    "website": "https://wasted360solutions.com",
+    "verified": true,
+    "impact_metric": "Successfully transformed 250,000 kilograms of non-recyclables into eco-tiles and upcycled accessories."
+  }
+]

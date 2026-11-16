@@ -550,3 +550,278 @@ h1, h2, h3, h4, h5, h6 {
   background: #f0fdfa;
   color: var(--primary-color);
 }
+
+/* ============================================================
+   AI ECO-CHATBOT WIDGET
+   ============================================================ */
+.chatbot-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0f766e 0%, #059669 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.85rem;
+  box-shadow: 0 10px 25px -3px rgba(15, 118, 110, 0.45), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  z-index: 1080;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.chatbot-fab:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 14px 28px rgba(15, 118, 110, 0.5);
+  color: #a7f3d0;
+}
+
+.chatbot-fab-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  background-color: #f59e0b;
+  border: 2px solid white;
+  border-radius: 50%;
+}
+
+.chatbot-window {
+  position: fixed;
+  bottom: 96px;
+  right: 24px;
+  width: 390px;
+  max-width: calc(100vw - 32px);
+  height: 570px;
+  max-height: calc(100vh - 120px);
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px -5px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1080;
+  transition: all 0.25s ease;
+  transform-origin: bottom right;
+}
+
+.chatbot-window.hidden {
+  opacity: 0;
+  transform: scale(0.85) translateY(20px);
+  pointer-events: none;
+}
+
+.chatbot-header {
+  background: linear-gradient(135deg, #042f2e 0%, #0f766e 100%);
+  color: white;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chatbot-body {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.chat-bubble {
+  max-width: 82%;
+  padding: 0.75rem 1rem;
+  border-radius: 16px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.chat-bubble-bot {
+  background: #ffffff;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.chat-bubble-user {
+  background: var(--primary-color);
+  color: #ffffff;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-quick-chips {
+  padding: 0.5rem 0.85rem;
+  background: #ffffff;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.chat-quick-chip {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-pill);
+  padding: 0.3rem 0.75rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.chat-quick-chip:hover {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+
+.chatbot-footer {
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border-top: 1px solid var(--border-color);
+}
+
+.typing-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #94a3b8;
+  margin-right: 3px;
+  animation: typingBounce 1.2s infinite ease-in-out;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+}
+
+/* ============================================================
+   COMMUNITY FEED & SCROLL COLUMN
+   ============================================================ */
+.community-feed-box {
+  max-height: 720px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.community-feed-box::-webkit-scrollbar {
+  width: 6px;
+}
+.community-feed-box::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.community-post {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.community-post:hover {
+  border-color: #cbd5e1;
+  box-shadow: var(--shadow-md);
+}
+
+.community-submit-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f0fdfa 100%);
+  border: 2px dashed #0f766e;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+/* ============================================================
+   NGO & DONATIONS MODULE
+   ============================================================ */
+.ngo-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ngo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: #059669;
+}
+
+.ngo-header-banner {
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ngo-logo-box {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.85rem;
+  flex-shrink: 0;
+}
+
+.ngo-tag {
+  background: #f1f5f9;
+  color: #334155;
+  border-radius: var(--radius-pill);
+  padding: 0.25rem 0.65rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  display: inline-block;
+  margin: 2px;
+}
+
+.donation-pill-amount {
+  border: 2px solid var(--border-color);
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.donation-pill-amount:hover, .donation-pill-amount.active {
+  border-color: var(--secondary-color);
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.donor-receipt-frame {
+  border: 3px double #059669;
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  position: relative;
+}

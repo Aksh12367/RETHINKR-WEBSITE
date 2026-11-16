@@ -1,13 +1,15 @@
 /**
  * ReThinkr - Don't dump it. Reimagine it.
- * Core Application Controller & State Engine
+ * Core Application Controller, AI Chatbot, Community Feed & NGO Donation Engine
  */
 
 const ReThinkr = {
   data: {
     categories: [],
     items: [],
-    ideas: []
+    ideas: [],
+    ngos: [],
+    communityPosts: []
   },
 
   // State keys
@@ -16,15 +18,23 @@ const ReThinkr = {
     CUSTOM_IDEAS: 'rethinkr_custom_ideas',
     FAVORITES: 'rethinkr_favorites',
     LIKES: 'rethinkr_likes',
-    CUSTOM_ITEMS: 'rethinkr_custom_items'
+    CUSTOM_ITEMS: 'rethinkr_custom_items',
+    COMMUNITY_POSTS: 'rethinkr_community_posts',
+    COMMUNITY_LIKES: 'rethinkr_community_likes',
+    PICKUPS: 'rethinkr_pickups',
+    DONATIONS: 'rethinkr_donations',
+    CHAT_HISTORY: 'rethinkr_chat_history'
   },
 
   // Initialize Application
   async init() {
     this.initUser();
     await this.loadDatabase();
+    this.loadNGOs();
+    this.loadCommunityPosts();
     this.updateNavAuth();
     this.initGlobalSearch();
+    this.initChatbot();
     this.routePage();
   },
 
@@ -32,7 +42,6 @@ const ReThinkr = {
   initUser() {
     let user = localStorage.getItem(this.KEYS.USER);
     if (!user) {
-      // Default to guest visitor
       this.currentUser = null;
     } else {
       try {
@@ -75,6 +84,8 @@ const ReThinkr = {
             <li><h6 class="dropdown-header">Signed in as <b>${this.escapeHtml(this.currentUser.email)}</b></h6></li>
             <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person me-2"></i>My Profile & Submissions</a></li>
             <li><a class="dropdown-item" href="submit.html"><i class="bi bi-plus-circle me-2"></i>Submit an Idea</a></li>
+            <li><a class="dropdown-item" href="community.html"><i class="bi bi-chat-heart me-2"></i>Community Feed</a></li>
+            <li><a class="dropdown-item" href="ngo.html"><i class="bi bi-heart-pulse me-2"></i>NGOs & Donations</a></li>
             ${isAdmin ? '<li><hr class="dropdown-divider"></li><li><a class="dropdown-item fw-bold text-primary" href="admin.html"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</a></li>' : ''}
             <li><hr class="dropdown-divider"></li>
             <li><button class="dropdown-item text-danger" onclick="ReThinkr.logout()"><i class="bi bi-box-arrow-right me-2"></i>Log Out</button></li>
@@ -120,6 +131,81 @@ const ReThinkr = {
     const customIdeas = JSON.parse(localStorage.getItem(this.KEYS.CUSTOM_IDEAS) || '[]');
     if (customIdeas.length) {
       this.data.ideas = [...customIdeas, ...this.data.ideas];
+    }
+  },
+
+  loadNGOs() {
+    if (window.RETHINKR_NGOS) {
+      this.data.ngos = window.RETHINKR_NGOS;
+    } else {
+      fetch('data/ngo_data.json')
+        .then(r => r.json())
+        .then(data => { this.data.ngos = data; })
+        .catch(() => {});
+    }
+  },
+
+  loadCommunityPosts() {
+    let posts = localStorage.getItem(this.KEYS.COMMUNITY_POSTS);
+    if (!posts) {
+      // Pre-seed initial active community posts
+      this.data.communityPosts = [
+        {
+          id: 101,
+          author: "Bhavya Goyal",
+          role: "Eco Contributor",
+          item: "Worn-Out Denim Jeans",
+          title: "Back-pocket wall hanger for remotes & reading glasses!",
+          content: "Cut the two back pockets off old jeans with a half-inch border and glued them to a wooden dowel. Perfect for living room clutter and took under 20 mins!",
+          materials: ["Worn jeans", "Scissors", "Wooden stick", "Fabric glue"],
+          time_ago: "2 hours ago",
+          likes: 34,
+          comments_count: 5
+        },
+        {
+          id: 102,
+          author: "Aksh Mittal",
+          role: "Maker & Designer",
+          item: "Broken Tablet Screen",
+          title: "Turned dead tablet into an ultra-bright tracing lightbox",
+          content: "Kept the LCD backlight powered via a 5V USB cord and displayed a blank white screen. It's now my daily calligraphy and architecture sketching lightpad!",
+          materials: ["Dead tablet", "USB cable", "Plexiglass"],
+          time_ago: "5 hours ago",
+          likes: 52,
+          comments_count: 8
+        },
+        {
+          id: 103,
+          author: "Pari Khurana",
+          role: "Curator",
+          item: "Paper Egg Carton",
+          title: "Biodegradable balcony seed starter pots for mint & basil",
+          content: "Cut egg cups apart, poked a small drainage hole in each, and filled with compost. When sprouts got 2 inches tall, planted the entire paper cup straight into my garden pot!",
+          materials: ["Egg carton", "Potting soil", "Herb seeds"],
+          time_ago: "1 day ago",
+          likes: 41,
+          comments_count: 4
+        },
+        {
+          id: 104,
+          author: "Rohan V.",
+          role: "Upcycler",
+          item: "Bicycle Inner Tube",
+          title: "Made indestructible survival 'Ranger bands' for garage tools",
+          content: "Cleaned a punctured butyl rubber tube and sliced it into 1.5-inch rings. They hold heavy garden rakes and hose coils together without rotting in sun or water.",
+          materials: ["Inner tube", "Heavy shears"],
+          time_ago: "2 days ago",
+          likes: 27,
+          comments_count: 2
+        }
+      ];
+      localStorage.setItem(this.KEYS.COMMUNITY_POSTS, JSON.stringify(this.data.communityPosts));
+    } else {
+      try {
+        this.data.communityPosts = JSON.parse(posts);
+      } catch (e) {
+        this.data.communityPosts = [];
+      }
     }
   },
 
@@ -190,7 +276,6 @@ const ReThinkr = {
         return;
       }
 
-      // Search items and ideas
       const matchedItems = this.data.items.filter(it => 
         it.name.toLowerCase().includes(q) || it.description.toLowerCase().includes(q)
       ).slice(0, 4);
@@ -249,11 +334,619 @@ const ReThinkr = {
     });
   },
 
+  // ============================================================
+  // AI CHATBOT ENGINE ("ReThinkr EcoBot")
+  // ============================================================
+  initChatbot() {
+    // If chatbot container already exists, return
+    if (document.getElementById('rethinkr-chatbot-fab')) return;
+
+    // Create FAB & Window
+    const fab = document.createElement('div');
+    fab.id = 'rethinkr-chatbot-fab';
+    fab.className = 'chatbot-fab';
+    fab.setAttribute('title', 'Chat with ReThinkr AI EcoBot');
+    fab.innerHTML = `
+      <i class="bi bi-robot"></i>
+      <span class="chatbot-fab-badge"></span>
+    `;
+
+    const chatWindow = document.createElement('div');
+    chatWindow.id = 'rethinkr-chatbot-window';
+    chatWindow.className = 'chatbot-window hidden';
+    chatWindow.innerHTML = `
+      <div class="chatbot-header">
+        <div class="d-flex align-items-center gap-2">
+          <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+            <i class="bi bi-robot"></i>
+          </div>
+          <div>
+            <div class="fw-bold small text-white lh-1">ReThinkr EcoBot</div>
+            <small class="text-success-emphasis" style="font-size: 0.7rem; color: #a7f3d0 !important;">● AI Assistant Online</small>
+          </div>
+        </div>
+        <div class="d-flex gap-1">
+          <button id="chatbot-clear-btn" class="btn btn-sm text-white-50 p-1" title="Clear Chat"><i class="bi bi-arrow-clockwise"></i></button>
+          <button id="chatbot-close-btn" class="btn btn-sm text-white p-1" title="Close"><i class="bi bi-x-lg"></i></button>
+        </div>
+      </div>
+
+      <div class="chatbot-body" id="chatbot-messages">
+        <!-- Initial Welcome Message -->
+        <div class="chat-bubble chat-bubble-bot">
+          👋 <b>Hello! I'm ReThinkr EcoBot</b>, your AI recycling & reuse guide.<br><br>
+          Tell me what item you're holding (like <i>old jeans, wine bottle, pickle jar, broken cable</i>) or ask where to donate items in India!
+        </div>
+      </div>
+
+      <!-- Quick Prompt Chips -->
+      <div class="chat-quick-chips">
+        <button class="chat-quick-chip" onclick="ReThinkr.sendChatbotQuery('What can I do with a glass mason jar?')">🍯 Mason Jar</button>
+        <button class="chat-quick-chip" onclick="ReThinkr.sendChatbotQuery('How to reuse old jeans without sewing?')">👖 Old Jeans</button>
+        <button class="chat-quick-chip" onclick="ReThinkr.sendChatbotQuery('Where can I donate old clothes in India?')">❤️ Donate Clothes</button>
+        <button class="chat-quick-chip" onclick="ReThinkr.sendChatbotQuery('How to dispose of e-waste or old phones?')">⚡ E-Waste</button>
+        <button class="chat-quick-chip" onclick="ReThinkr.sendChatbotQuery('Show me free 15-minute upcycling ideas')">⏱️ Quick Free Projects</button>
+      </div>
+
+      <div class="chatbot-footer">
+        <form id="chatbot-form" class="d-flex gap-2">
+          <input type="text" id="chatbot-input" class="form-control form-control-sm rounded-pill" placeholder="Ask about an item or donation..." autocomplete="off" required>
+          <button type="submit" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+            <i class="bi bi-arrow-up-short fs-5"></i>
+          </button>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(fab);
+    document.body.appendChild(chatWindow);
+
+    // Event Listeners
+    fab.addEventListener('click', () => {
+      chatWindow.classList.toggle('hidden');
+      if (!chatWindow.classList.contains('hidden')) {
+        document.getElementById('chatbot-input')?.focus();
+      }
+    });
+
+    document.getElementById('chatbot-close-btn')?.addEventListener('click', () => {
+      chatWindow.classList.add('hidden');
+    });
+
+    document.getElementById('chatbot-clear-btn')?.addEventListener('click', () => {
+      const msgBox = document.getElementById('chatbot-messages');
+      if (msgBox) {
+        msgBox.innerHTML = `
+          <div class="chat-bubble chat-bubble-bot">
+            👋 Chat cleared. What item or donation can I help you with today?
+          </div>
+        `;
+      }
+    });
+
+    document.getElementById('chatbot-form')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('chatbot-input');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      this.sendChatbotQuery(text);
+    });
+  },
+
+  sendChatbotQuery(query) {
+    const msgBox = document.getElementById('chatbot-messages');
+    if (!msgBox) return;
+
+    // Add User Bubble
+    const userBubble = document.createElement('div');
+    userBubble.className = 'chat-bubble chat-bubble-user';
+    userBubble.innerText = query;
+    msgBox.appendChild(userBubble);
+    msgBox.scrollTop = msgBox.scrollHeight;
+
+    // Add Typing Indicator
+    const typingBubble = document.createElement('div');
+    typingBubble.className = 'chat-bubble chat-bubble-bot typing-bubble';
+    typingBubble.innerHTML = `<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>`;
+    msgBox.appendChild(typingBubble);
+    msgBox.scrollTop = msgBox.scrollHeight;
+
+    // Generate Smart Response after slight delay
+    setTimeout(() => {
+      typingBubble.remove();
+      const botResponse = this.generateBotResponse(query);
+      const botBubble = document.createElement('div');
+      botBubble.className = 'chat-bubble chat-bubble-bot';
+      botBubble.innerHTML = botResponse;
+      msgBox.appendChild(botBubble);
+      msgBox.scrollTop = msgBox.scrollHeight;
+    }, 450);
+  },
+
+  generateBotResponse(q) {
+    const query = q.toLowerCase();
+
+    // 1. NGO & Donation Questions
+    if (query.includes('donate') || query.includes('ngo') || query.includes('clothes donation') || query.includes('charity') || query.includes('pickup')) {
+      const ngos = this.data.ngos.length ? this.data.ngos : (window.RETHINKR_NGOS || []);
+      let matchedNgo = ngos[0];
+      if (query.includes('cloth') || query.includes('textile') || query.includes('blanket')) {
+        matchedNgo = ngos.find(n => n.id === 'goonj') || ngos[0];
+      } else if (query.includes('phone') || query.includes('electronic') || query.includes('e-waste') || query.includes('computer')) {
+        matchedNgo = ngos.find(n => n.id === 'chintan') || ngos[1];
+      } else if (query.includes('book') || query.includes('paper') || query.includes('study')) {
+        matchedNgo = ngos.find(n => n.id === 'pratham_books') || ngos[4];
+      } else if (query.includes('food') || query.includes('meal')) {
+        matchedNgo = ngos.find(n => n.id === 'robinhood') || ngos[3];
+      }
+
+      return `
+        ❤️ <b>Donation Partner Recommendation:</b><br><br>
+        <b>${matchedNgo.name}</b> (${matchedNgo.focus})<br>
+        <i>"${matchedNgo.tagline}"</i><br><br>
+        📦 <b>Accepted Items:</b> ${matchedNgo.accepted_items.slice(0, 3).join(', ')}.<br>
+        📍 <b>Coverage:</b> ${matchedNgo.cities}<br><br>
+        <div class="d-flex gap-2 mt-2">
+          <a href="ngo.html" class="btn btn-sm btn-success text-white fw-semibold">Schedule Free Pickup</a>
+          <a href="ngo.html" class="btn btn-sm btn-outline-primary fw-semibold">View All NGOs</a>
+        </div>
+      `;
+    }
+
+    // 2. Search Item & Reuse Ideas
+    const matchedItem = this.data.items.find(it => 
+      query.includes(it.name.toLowerCase()) || 
+      it.name.toLowerCase().split(' ').some(w => w.length > 3 && query.includes(w))
+    );
+
+    if (matchedItem) {
+      const ideas = this.getApprovedIdeas().filter(id => id.item_id === matchedItem.id);
+      let html = `🌿 <b>Great item! Here is how you can upcycle "${matchedItem.name}":</b><br><br>`;
+      ideas.slice(0, 2).forEach((id, idx) => {
+        html += `
+          <div class="p-2 border rounded bg-light mb-2">
+            <div class="fw-bold text-success">${idx + 1}. ${this.escapeHtml(id.title)}</div>
+            <small class="text-muted d-block">${id.summary}</small>
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <span class="badge bg-secondary-subtle text-dark">${id.time_required}</span>
+              <a href="idea.html?id=${id.id}" class="small fw-bold text-primary">View Full Steps →</a>
+            </div>
+          </div>
+        `;
+      });
+      html += `<a href="item.html?id=${matchedItem.id}" class="btn btn-sm btn-outline-success w-100 mt-1">See All ${ideas.length} Ideas for ${matchedItem.name}</a>`;
+      return html;
+    }
+
+    // 3. Fast Free Projects
+    if (query.includes('free') || query.includes('quick') || query.includes('15') || query.includes('easy')) {
+      const freeIdeas = this.getApprovedIdeas().filter(id => id.cost_level === 'Free' && id.difficulty === 'Easy').slice(0, 2);
+      let html = `⚡ <b>Here are top beginner-friendly, 100% Free projects:</b><br><br>`;
+      freeIdeas.forEach(id => {
+        html += `
+          <div class="p-2 border rounded bg-light mb-2">
+            <b>${this.escapeHtml(id.title)}</b> (for ${this.escapeHtml(id.item_name)})<br>
+            <small class="text-muted">Tools: ${(id.materials || []).slice(0, 3).join(', ')} | ${id.time_required}</small><br>
+            <a href="idea.html?id=${id.id}" class="small fw-bold text-primary">Step-by-step instructions →</a>
+          </div>
+        `;
+      });
+      return html;
+    }
+
+    // 4. General Circular Economy
+    if (query.includes('waste hierarchy') || query.includes('reduce') || query.includes('reuse') || query.includes('landfill')) {
+      return `
+        ♻️ <b>The Waste Hierarchy (Reduce, Reuse, Recycle):</b><br><br>
+        Reusing sits <b>above</b> recycling because it preserves all the embodied energy, water, and raw material that went into manufacturing the item. Recycling melts or breaks down the material, whereas upcycling gives it immediate utility with zero energy!
+      `;
+    }
+
+    // Default Fallback
+    return `
+      💡 I can help you find creative upcycling ideas or donate to verified NGOs!<br><br>
+      Try searching for an everyday item like:
+      • <i>"Wine bottle ideas"</i><br>
+      • <i>"What to do with cardboard boxes?"</i><br>
+      • <i>"Donate clothes to Goonj"</i><br>
+      • <i>"Old t-shirt no-sew tote bag"</i><br><br>
+      Or <a href="search.html" class="text-primary fw-bold">browse our full 52-item catalog here</a>.
+    `;
+  },
+
+  // ============================================================
+  // COMMUNITY FEED & COLUMN LOGIC
+  // ============================================================
+  renderCommunityPage() {
+    this.renderCommunityFeed('community-main-feed');
+    this.setupCommunitySubmitForm('community-quick-form');
+  },
+
+  renderHomeCommunityColumn() {
+    this.renderCommunityFeed('home-community-scroll-feed');
+    this.setupCommunitySubmitForm('home-community-quick-form');
+  },
+
+  renderCommunityFeed(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    if (this.data.communityPosts.length === 0) {
+      container.innerHTML = `<div class="p-4 text-center text-muted">No community ideas posted yet. Be the first!</div>`;
+      return;
+    }
+
+    let html = '';
+    this.data.communityPosts.forEach(post => {
+      const likesMap = JSON.parse(localStorage.getItem(this.KEYS.COMMUNITY_LIKES) || '{}');
+      const isLiked = !!likesMap[post.id];
+
+      html += `
+        <div class="community-post">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="d-flex align-items-center gap-2">
+              <div class="bg-success-subtle text-success fw-bold rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; font-size: 0.95rem;">
+                ${post.author.charAt(0)}
+              </div>
+              <div>
+                <div class="fw-bold small mb-0">${this.escapeHtml(post.author)}</div>
+                <small class="text-muted" style="font-size: 0.72rem;">${post.role || 'Community Member'} • ${post.time_ago}</small>
+              </div>
+            </div>
+            <span class="badge bg-light text-dark border"><i class="bi bi-box-seam me-1"></i> ${this.escapeHtml(post.item)}</span>
+          </div>
+
+          <h6 class="fw-bold text-dark mb-1">${this.escapeHtml(post.title)}</h6>
+          <p class="text-secondary small mb-2">${this.escapeHtml(post.content)}</p>
+
+          ${post.materials && post.materials.length ? `
+            <div class="mb-2">
+              ${post.materials.map(m => `<span class="badge bg-secondary-subtle text-dark me-1" style="font-size: 0.68rem;">${this.escapeHtml(m)}</span>`).join('')}
+            </div>
+          ` : ''}
+
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top small">
+            <button class="btn btn-sm btn-link p-0 text-decoration-none d-flex align-items-center gap-1 ${isLiked ? 'text-danger' : 'text-muted'}" onclick="ReThinkr.toggleCommunityLike(${post.id})">
+              <i class="bi ${isLiked ? 'bi-heart-fill' : 'bi-heart'}"></i>
+              <span class="fw-semibold">${post.likes}</span> Likes
+            </button>
+            <span class="text-muted"><i class="bi bi-chat-dots me-1"></i> ${post.comments_count || 0} Comments</span>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  },
+
+  setupCommunitySubmitForm(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const titleInput = form.querySelector('[name="title"]');
+      const itemInput = form.querySelector('[name="item"]');
+      const contentInput = form.querySelector('[name="content"]');
+      const toolsInput = form.querySelector('[name="tools"]');
+      const authorInput = form.querySelector('[name="author"]');
+
+      if (!titleInput || !itemInput || !contentInput) return;
+
+      const newPost = {
+        id: Date.now(),
+        author: (authorInput && authorInput.value.trim()) ? authorInput.value.trim() : (this.currentUser ? this.currentUser.name : 'Eco Maker'),
+        role: this.currentUser && this.currentUser.role === 'admin' ? 'Project Admin' : 'Community Member',
+        item: itemInput.value.trim(),
+        title: titleInput.value.trim(),
+        content: contentInput.value.trim(),
+        materials: toolsInput && toolsInput.value ? toolsInput.value.split(',').map(s => s.trim()).filter(Boolean) : ["Household scissors", "Glue"],
+        time_ago: "Just now",
+        likes: 1,
+        comments_count: 0
+      };
+
+      this.data.communityPosts.unshift(newPost);
+      localStorage.setItem(this.KEYS.COMMUNITY_POSTS, JSON.stringify(this.data.communityPosts));
+
+      // Reset form
+      form.reset();
+
+      // Refresh feeds
+      this.renderCommunityFeed('community-main-feed');
+      this.renderCommunityFeed('home-community-scroll-feed');
+
+      alert('Awesome! Your reuse idea has been published live to the community feed.');
+    });
+  },
+
+  toggleCommunityLike(postId) {
+    let likesMap = JSON.parse(localStorage.getItem(this.KEYS.COMMUNITY_LIKES) || '{}');
+    const isLiked = !!likesMap[postId];
+    const post = this.data.communityPosts.find(p => p.id === postId);
+    if (!post) return;
+
+    if (isLiked) {
+      delete likesMap[postId];
+      post.likes = Math.max(0, post.likes - 1);
+    } else {
+      likesMap[postId] = true;
+      post.likes += 1;
+    }
+
+    localStorage.setItem(this.KEYS.COMMUNITY_LIKES, JSON.stringify(likesMap));
+    localStorage.setItem(this.KEYS.COMMUNITY_POSTS, JSON.stringify(this.data.communityPosts));
+
+    this.renderCommunityFeed('community-main-feed');
+    this.renderCommunityFeed('home-community-scroll-feed');
+  },
+
+  // ============================================================
+  // NGOs & DONATIONS MODULE
+  // ============================================================
+  renderNGOPage() {
+    this.renderNGOGrid('ngo-directory-grid', 'all');
+
+    // Category filter pills
+    document.querySelectorAll('.ngo-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ngo-filter-btn').forEach(b => b.classList.remove('active', 'btn-primary', 'text-white'));
+        btn.classList.add('active', 'btn-primary', 'text-white');
+        const cat = btn.getAttribute('data-cat') || 'all';
+        this.renderNGOGrid('ngo-directory-grid', cat);
+      });
+    });
+  },
+
+  renderHomeNGOColumn() {
+    this.renderNGOGrid('home-ngo-directory-grid', 'all', 3);
+  },
+
+  renderNGOGrid(containerId, category = 'all', limit = null) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    let ngos = this.data.ngos.length ? this.data.ngos : (window.RETHINKR_NGOS || []);
+    if (category !== 'all') {
+      ngos = ngos.filter(n => n.category === category);
+    }
+
+    if (limit) {
+      ngos = ngos.slice(0, limit);
+    }
+
+    let html = '';
+    ngos.forEach(ngo => {
+      html += `
+        <div class="col-md-6 col-lg-${limit ? '12' : '4'} mb-4">
+          <div class="ngo-card">
+            <div class="ngo-header-banner" style="background-color: ${ngo.color}10;">
+              <div class="ngo-logo-box" style="background-color: ${ngo.color}; color: white;">
+                <i class="bi ${ngo.logo_icon}"></i>
+              </div>
+              <div class="overflow-hidden">
+                <div class="d-flex align-items-center gap-1">
+                  <h5 class="fw-bold mb-0 text-truncate">${this.escapeHtml(ngo.name)}</h5>
+                  ${ngo.verified ? '<i class="bi bi-patch-check-fill text-primary" title="Verified Partner"></i>' : ''}
+                </div>
+                <small class="text-muted d-block text-truncate">${this.escapeHtml(ngo.focus)}</small>
+              </div>
+            </div>
+
+            <div class="p-3 flex-grow-1 d-flex flex-column justify-content-between">
+              <div>
+                <p class="text-secondary small mb-3">${this.escapeHtml(ngo.description)}</p>
+
+                <div class="mb-3">
+                  <label class="text-uppercase fw-bold text-muted" style="font-size: 0.68rem; letter-spacing: 0.05em;">Accepted Items for Donation</label>
+                  <div>
+                    ${ngo.accepted_items.map(it => `<span class="ngo-tag">${this.escapeHtml(it)}</span>`).join('')}
+                  </div>
+                </div>
+
+                <div class="small text-muted mb-3">
+                  <i class="bi bi-geo-alt-fill text-danger me-1"></i> ${this.escapeHtml(ngo.cities)}
+                </div>
+
+                ${ngo.tax_exemption_80g ? `
+                  <div class="badge bg-success-subtle text-success p-2 w-100 text-start mb-3">
+                    <i class="bi bi-shield-check me-1"></i> Eligible for 50% Tax Deduction under Section 80G
+                  </div>
+                ` : ''}
+              </div>
+
+              <div>
+                <div class="d-grid gap-2">
+                  <button class="btn btn-success btn-sm fw-bold" onclick="ReThinkr.openPickupModal('${ngo.id}')">
+                    <i class="bi bi-truck me-1"></i> Schedule Item Pickup
+                  </button>
+                  <button class="btn btn-outline-primary btn-sm fw-semibold" onclick="ReThinkr.openDonationModal('${ngo.id}')">
+                    <i class="bi bi-heart me-1"></i> Make Monetary Donation
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  },
+
+  openPickupModal(ngoId) {
+    const ngos = this.data.ngos.length ? this.data.ngos : (window.RETHINKR_NGOS || []);
+    const ngo = ngos.find(n => n.id === ngoId) || ngos[0];
+
+    let modalEl = document.getElementById('pickupModal');
+    if (!modalEl) {
+      modalEl = document.createElement('div');
+      modalEl.id = 'pickupModal';
+      modalEl.className = 'modal fade';
+      modalEl.tabIndex = -1;
+      document.body.appendChild(modalEl);
+    }
+
+    modalEl.innerHTML = `
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title fw-bold"><i class="bi bi-truck me-2"></i>Schedule Pickup with ${this.escapeHtml(ngo.name)}</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <form id="pickup-schedule-form">
+            <div class="modal-body p-4">
+              <p class="text-muted small mb-3">A partner volunteer or courier will collect your packaged goods directly from your doorstep.</p>
+              
+              <div class="mb-3">
+                <label class="form-label fw-bold small">Your Full Name</label>
+                <input type="text" id="pickup-name" class="form-control" value="${this.currentUser ? this.currentUser.name : ''}" required placeholder="e.g. Aksh Mittal">
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label fw-bold small">Phone Number</label>
+                  <input type="tel" id="pickup-phone" class="form-control" placeholder="+91 98765 43210" required>
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-bold small">City</label>
+                  <input type="text" id="pickup-city" class="form-control" placeholder="Delhi, Mumbai, etc." required>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold small">Pickup Address & Pincode</label>
+                <textarea id="pickup-address" class="form-control" rows="2" placeholder="House/Flat No., Street, Pincode" required></textarea>
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label fw-bold small">Items Donating</label>
+                  <select id="pickup-items" class="form-select" required>
+                    <option value="Clothes & Woolens">Clothes & Woolens</option>
+                    <option value="Computers & Electronics">Computers & Electronics</option>
+                    <option value="Books & Stationery">Books & Stationery</option>
+                    <option value="Cardboard & Dry Waste">Cardboard & Dry Waste</option>
+                    <option value="Household Utensils">Household Utensils</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-bold small">Preferred Date</label>
+                  <input type="date" id="pickup-date" class="form-control" required value="2026-11-20">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer bg-light">
+              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-success fw-bold">Confirm & Generate Tracking ID</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    const bsModal = new bootstrap.Modal(modalEl);
+    bsModal.show();
+
+    document.getElementById('pickup-schedule-form')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const trackingId = 'RTH-' + ngo.name.substring(0, 4).toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000);
+      bsModal.hide();
+      alert(`🎉 Pickup Scheduled Successfully!\n\nTracking ID: ${trackingId}\nPartner: ${ngo.name}\nOur volunteer will call before arriving for doorstep collection.`);
+    });
+  },
+
+  openDonationModal(ngoId) {
+    const ngos = this.data.ngos.length ? this.data.ngos : (window.RETHINKR_NGOS || []);
+    const ngo = ngos.find(n => n.id === ngoId) || ngos[0];
+
+    let modalEl = document.getElementById('donationModal');
+    if (!modalEl) {
+      modalEl = document.createElement('div');
+      modalEl.id = 'donationModal';
+      modalEl.className = 'modal fade';
+      modalEl.tabIndex = -1;
+      document.body.appendChild(modalEl);
+    }
+
+    modalEl.innerHTML = `
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title fw-bold"><i class="bi bi-heart-fill me-2"></i>Donate to ${this.escapeHtml(ngo.name)}</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <form id="donation-submit-form">
+            <div class="modal-body p-4">
+              <p class="text-muted small mb-3">Your financial contribution funds logistics, sorting facilities, and distribution of repurposed goods to rural & needy communities.</p>
+
+              <label class="form-label fw-bold small">Choose Contribution Amount (INR ₹)</label>
+              <div class="d-flex gap-2 mb-3">
+                <button type="button" class="donation-pill-amount flex-grow-1 text-center" onclick="ReThinkr.selectDonationAmount(this, 250)">₹250</button>
+                <button type="button" class="donation-pill-amount flex-grow-1 text-center active" onclick="ReThinkr.selectDonationAmount(this, 500)">₹500</button>
+                <button type="button" class="donation-pill-amount flex-grow-1 text-center" onclick="ReThinkr.selectDonationAmount(this, 1000)">₹1,000</button>
+                <button type="button" class="donation-pill-amount flex-grow-1 text-center" onclick="ReThinkr.selectDonationAmount(this, 2500)">₹2,500</button>
+              </div>
+
+              <input type="hidden" id="donation-amount-val" value="500">
+
+              <div class="mb-3">
+                <label class="form-label fw-bold small">Donor Name</label>
+                <input type="text" id="donor-name" class="form-control" value="${this.currentUser ? this.currentUser.name : ''}" required placeholder="Your Full Name">
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label fw-bold small">Email for 80G Receipt</label>
+                  <input type="email" id="donor-email" class="form-control" value="${this.currentUser ? this.currentUser.email : ''}" required placeholder="you@email.com">
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-bold small">PAN Card (Optional)</label>
+                  <input type="text" id="donor-pan" class="form-control" placeholder="ABCDE1234F">
+                </div>
+              </div>
+
+              <div class="alert alert-success small mb-0">
+                <i class="bi bi-shield-lock-fill text-success me-1"></i> Simulated payment gateway mode active. Instant 80G receipt will be generated.
+              </div>
+            </div>
+            <div class="modal-footer bg-light">
+              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary fw-bold">Proceed & Generate 80G Receipt</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    const bsModal = new bootstrap.Modal(modalEl);
+    bsModal.show();
+
+    document.getElementById('donation-submit-form')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const amt = document.getElementById('donation-amount-val')?.value || '500';
+      const name = document.getElementById('donor-name')?.value || 'Valued Donor';
+      const receiptNo = 'RTH-80G-' + Math.floor(100000 + Math.random() * 900000);
+      bsModal.hide();
+      alert(`💚 Thank You, ${name}!\n\nYour contribution of ₹${amt} to ${ngo.name} has been processed successfully!\nReceipt Number: ${receiptNo}\nSection 80G Tax Exemption Certificate is recorded.`);
+    });
+  },
+
+  selectDonationAmount(btn, val) {
+    document.querySelectorAll('.donation-pill-amount').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const input = document.getElementById('donation-amount-val');
+    if (input) input.value = val;
+  },
+
   // Route Current Page
   routePage() {
     const path = window.location.pathname.toLowerCase();
     if (path.endsWith('index.html') || path === '/' || path.endsWith('/')) {
       this.renderHomePage();
+      this.renderHomeCommunityColumn();
+      this.renderHomeNGOColumn();
     } else if (path.endsWith('search.html')) {
       this.renderSearchPage();
     } else if (path.endsWith('item.html')) {
@@ -268,12 +961,15 @@ const ReThinkr = {
       this.renderAdminPage();
     } else if (path.endsWith('login.html')) {
       this.renderLoginPage();
+    } else if (path.endsWith('community.html')) {
+      this.renderCommunityPage();
+    } else if (path.endsWith('ngo.html')) {
+      this.renderNGOPage();
     }
   },
 
   // 1. Home Page Rendering
   renderHomePage() {
-    // Render Category Grid
     const catGrid = document.getElementById('home-category-grid');
     if (catGrid) {
       let html = '';
@@ -294,7 +990,6 @@ const ReThinkr = {
       catGrid.innerHTML = html;
     }
 
-    // Render Trending Ideas
     const trendingGrid = document.getElementById('home-trending-grid');
     if (trendingGrid) {
       const topIdeas = this.getApprovedIdeas()
@@ -308,18 +1003,6 @@ const ReThinkr = {
       trendingGrid.innerHTML = html;
     }
 
-    // Render Community Recent Feed
-    const communityGrid = document.getElementById('home-community-grid');
-    if (communityGrid) {
-      const recentIdeas = this.getApprovedIdeas().slice(-4).reverse();
-      let html = '';
-      recentIdeas.forEach(idea => {
-        html += this.buildIdeaCard(idea);
-      });
-      communityGrid.innerHTML = html;
-    }
-
-    // Hero stats
     const totalItemsEl = document.getElementById('stat-total-items');
     const totalIdeasEl = document.getElementById('stat-total-ideas');
     if (totalItemsEl) totalItemsEl.innerText = this.data.items.length + '+';
@@ -331,15 +1014,12 @@ const ReThinkr = {
     const urlParams = new URLSearchParams(window.location.search);
     const initialCategory = urlParams.get('category') || '';
     const initialQuery = urlParams.get('q') || '';
-    const initialType = urlParams.get('type') || '';
-    const initialDiff = urlParams.get('difficulty') || '';
 
     const searchInput = document.getElementById('search-keyword');
     if (searchInput && initialQuery) {
       searchInput.value = initialQuery;
     }
 
-    // Populate Category Filter dropdown / pills
     const catSelect = document.getElementById('filter-category');
     if (catSelect) {
       let optHtml = '<option value="">All Categories (8)</option>';
@@ -350,7 +1030,6 @@ const ReThinkr = {
       catSelect.innerHTML = optHtml;
     }
 
-    // Setup Filter Listeners
     const triggerSearch = () => this.applySearchFilters();
 
     ['search-keyword', 'filter-category', 'filter-type', 'filter-difficulty', 'filter-cost', 'filter-sort'].forEach(id => {
@@ -361,7 +1040,6 @@ const ReThinkr = {
       }
     });
 
-    // Material tags click filter
     document.querySelectorAll('.material-filter-pill').forEach(btn => {
       btn.addEventListener('click', () => {
         btn.classList.toggle('active');
@@ -369,7 +1047,6 @@ const ReThinkr = {
       });
     });
 
-    // Initial search
     this.applySearchFilters();
   },
 
@@ -381,7 +1058,6 @@ const ReThinkr = {
     const cost = document.getElementById('filter-cost')?.value || '';
     const sort = document.getElementById('filter-sort')?.value || 'popular';
 
-    // Active material filters
     const activeMaterials = Array.from(document.querySelectorAll('.material-filter-pill.active'))
       .map(el => el.getAttribute('data-material').toLowerCase());
 
@@ -415,7 +1091,6 @@ const ReThinkr = {
         return true;
       });
 
-      // Sort
       if (sort === 'popular') {
         filtered.sort((a, b) => (b.views_count + b.likes_count * 2) - (a.views_count + a.likes_count * 2));
       } else if (sort === 'newest') {
@@ -426,7 +1101,6 @@ const ReThinkr = {
 
       this.renderIdeaResults(filtered);
     } else {
-      // Items tab
       let filtered = this.data.items.filter(it => {
         if (q) {
           const matchName = it.name.toLowerCase().includes(q);
@@ -493,7 +1167,7 @@ const ReThinkr = {
               <img src="${it.image_url}" alt="${this.escapeHtml(it.name)}" loading="lazy">
               <span class="card-category-badge">${this.escapeHtml(it.category_id)}</span>
             </div>
-            <div class="p-3 flex-grow-1 d-flex flex-direction-column justify-content-between">
+            <div class="p-3 flex-grow-1 d-flex flex-column justify-content-between">
               <div>
                 <h5 class="fw-bold mb-1">${this.escapeHtml(it.name)}</h5>
                 <p class="text-muted small mb-2 line-clamp-2">${this.escapeHtml(it.description)}</p>
@@ -549,7 +1223,6 @@ const ReThinkr = {
       return;
     }
 
-    // Fill Item Details
     document.title = `${item.name} - Upcycling & Reuse Ideas | ReThinkr`;
     const nameEl = document.getElementById('item-name');
     const descEl = document.getElementById('item-desc');
@@ -563,7 +1236,6 @@ const ReThinkr = {
     if (catBadgeEl) catBadgeEl.innerText = item.category_id;
     if (impactEl) impactEl.innerText = item.disposal_impact;
 
-    // Load ideas for this item
     const itemIdeas = this.getApprovedIdeas().filter(i => i.item_id === itemId);
     const grid = document.getElementById('item-ideas-grid');
     const countEl = document.getElementById('item-ideas-count');
@@ -577,7 +1249,6 @@ const ReThinkr = {
       grid.innerHTML = html;
     }
 
-    // Preset for submit idea for this item
     const submitBtn = document.getElementById('item-submit-idea-btn');
     if (submitBtn) {
       submitBtn.href = `submit.html?item_id=${item.id}`;
@@ -603,7 +1274,6 @@ const ReThinkr = {
 
     document.title = `${idea.title} - ReThinkr`;
 
-    // Populate header info
     const titleEl = document.getElementById('idea-title');
     const typeEl = document.getElementById('idea-type-badge');
     const diffEl = document.getElementById('idea-diff-badge');
@@ -640,11 +1310,10 @@ const ReThinkr = {
     if (summaryEl) summaryEl.innerText = idea.summary;
     if (likesCountEl) likesCountEl.innerText = idea.likes_count || 0;
 
-    // Materials Checklist
     const matList = document.getElementById('idea-materials-list');
     if (matList) {
       let html = '';
-      (idea.materials || []).forEach((mat, idx) => {
+      (idea.materials || []).forEach((mat) => {
         html += `
           <div class="material-check-item" onclick="this.classList.toggle('checked')">
             <i class="bi bi-check2-circle text-success fs-5"></i>
@@ -655,7 +1324,6 @@ const ReThinkr = {
       matList.innerHTML = html;
     }
 
-    // Step-by-Step Timeline
     const stepsList = document.getElementById('idea-steps-list');
     if (stepsList) {
       let html = '';
@@ -671,7 +1339,6 @@ const ReThinkr = {
       stepsList.innerHTML = html;
     }
 
-    // Favorite button state
     const favBtn = document.getElementById('idea-fav-btn');
     if (favBtn) {
       const isFav = this.isFavorite(idea.id);
@@ -686,7 +1353,6 @@ const ReThinkr = {
       };
     }
 
-    // Like button
     const likeBtn = document.getElementById('idea-like-btn');
     if (likeBtn) {
       likeBtn.onclick = () => {
@@ -717,7 +1383,6 @@ const ReThinkr = {
       }
     }
 
-    // Populate Item select
     const itemSelect = document.getElementById('submit-item-id');
     const urlParams = new URLSearchParams(window.location.search);
     const preItemId = Number(urlParams.get('item_id') || 0);
@@ -731,7 +1396,6 @@ const ReThinkr = {
       itemSelect.innerHTML = optHtml;
     }
 
-    // Materials Adder
     const addMatBtn = document.getElementById('add-material-btn');
     const matInput = document.getElementById('new-material-input');
     const matTagsContainer = document.getElementById('materials-tags-container');
@@ -756,7 +1420,6 @@ const ReThinkr = {
       });
     }
 
-    // Steps Builder
     const addStepBtn = document.getElementById('add-step-btn');
     const stepsContainer = document.getElementById('steps-builder-container');
 
@@ -774,7 +1437,6 @@ const ReThinkr = {
       });
     }
 
-    // Form Submission
     const form = document.getElementById('submit-idea-form');
     if (form) {
       form.addEventListener('submit', (e) => {
@@ -790,11 +1452,9 @@ const ReThinkr = {
         const summary = document.getElementById('submit-summary').value.trim();
         const imgUrl = document.getElementById('submit-image-url').value.trim() || (itemObj ? itemObj.image_url : 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600');
 
-        // Extract Materials
         const materials = Array.from(document.querySelectorAll('#materials-tags-container [data-val]'))
           .map(el => el.getAttribute('data-val'));
 
-        // Extract Steps
         const steps = Array.from(document.querySelectorAll('#steps-builder-container .step-text'))
           .map(el => el.value.trim())
           .filter(Boolean);
@@ -827,13 +1487,12 @@ const ReThinkr = {
           steps: steps,
           summary: summary,
           image_url: imgUrl,
-          status: 'pending', // Pending Admin Moderation as specified in synopsis!
+          status: 'pending',
           likes_count: 0,
           views_count: 1,
           created_at: new Date().toISOString().replace('T', ' ').substring(0, 19)
         };
 
-        // Save in localStorage
         const customIdeas = JSON.parse(localStorage.getItem(this.KEYS.CUSTOM_IDEAS) || '[]');
         customIdeas.unshift(newIdea);
         localStorage.setItem(this.KEYS.CUSTOM_IDEAS, JSON.stringify(customIdeas));
@@ -862,7 +1521,6 @@ const ReThinkr = {
       userRoleBadge.className = this.currentUser.role === 'admin' ? 'badge bg-warning text-dark' : 'badge bg-primary';
     }
 
-    // User Submissions
     const allCustom = JSON.parse(localStorage.getItem(this.KEYS.CUSTOM_IDEAS) || '[]');
     const userSubmissions = allCustom.filter(i => i.user_id === this.currentUser.id);
     const subCountEl = document.getElementById('profile-submissions-count');
@@ -910,7 +1568,6 @@ const ReThinkr = {
       }
     }
 
-    // User Saved Favorites
     const favIds = this.getFavorites();
     const favGrid = document.getElementById('profile-favorites-grid');
     const favCountEl = document.getElementById('profile-favorites-count');
@@ -946,7 +1603,6 @@ const ReThinkr = {
       return;
     }
 
-    // Analytics Counter
     const totalItemsEl = document.getElementById('admin-stat-items');
     const totalIdeasEl = document.getElementById('admin-stat-ideas');
     const pendingCountEl = document.getElementById('admin-stat-pending');
@@ -958,7 +1614,6 @@ const ReThinkr = {
     if (totalIdeasEl) totalIdeasEl.innerText = this.getApprovedIdeas().length;
     if (pendingCountEl) pendingCountEl.innerText = pendingIdeas.length;
 
-    // Render Pending Moderation Queue
     const queueContainer = document.getElementById('admin-moderation-queue');
     if (queueContainer) {
       if (pendingIdeas.length === 0) {
@@ -1006,7 +1661,6 @@ const ReThinkr = {
       }
     }
 
-    // Render Category Distribution
     const catDist = document.getElementById('admin-category-dist');
     if (catDist) {
       let html = '';
@@ -1029,7 +1683,6 @@ const ReThinkr = {
     }
   },
 
-  // Moderate Idea action
   moderateIdea(ideaId, newStatus) {
     let allCustom = JSON.parse(localStorage.getItem(this.KEYS.CUSTOM_IDEAS) || '[]');
     let target = allCustom.find(i => i.id === ideaId);
@@ -1049,7 +1702,6 @@ const ReThinkr = {
       if (regTab) regTab.click();
     }
 
-    // Handle Login Submit
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
       loginForm.addEventListener('submit', (e) => {
@@ -1070,7 +1722,6 @@ const ReThinkr = {
       });
     }
 
-    // Handle Registration Submit
     const regForm = document.getElementById('register-form');
     if (regForm) {
       regForm.addEventListener('submit', (e) => {
@@ -1091,7 +1742,6 @@ const ReThinkr = {
     }
   },
 
-  // Quick Demo Login helper
   quickLogin(role) {
     if (role === 'admin') {
       this.setCurrentUser({
@@ -1114,7 +1764,6 @@ const ReThinkr = {
     }
   },
 
-  // Shared Helper: Build Idea Card HTML
   buildIdeaCard(idea) {
     const isFav = this.isFavorite(idea.id);
     return `

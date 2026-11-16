@@ -56,6 +56,12 @@ $currentUser = $_SESSION['user'] ?? null;
             <a class="nav-link <?php echo ($activeNav ?? '') === 'explore' ? 'active' : ''; ?>" href="search.php">Explore Ideas</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link <?php echo ($activeNav ?? '') === 'community' ? 'active' : ''; ?>" href="community.php"><i class="bi bi-people-fill text-success me-1"></i>Community</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <?php echo ($activeNav ?? '') === 'ngo' ? 'active' : ''; ?>" href="ngo.php"><i class="bi bi-heart-fill text-danger me-1"></i>NGOs & Donate</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link <?php echo ($activeNav ?? '') === 'submit' ? 'active' : ''; ?>" href="submit.php">
               <i class="bi bi-plus-circle-fill text-success me-1"></i>Submit Idea
             </a>

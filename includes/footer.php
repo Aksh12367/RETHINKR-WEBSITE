@@ -79,6 +79,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Application Core Script -->
   <script src="data/items_data.js"></script>
+  <script src="data/ngo_data.js"></script>
   <script src="assets/js/app.js"></script>
 </body>
 </html>
