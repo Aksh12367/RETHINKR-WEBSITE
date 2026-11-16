@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReThinkr - Don't dump it. Reimagine it.</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-rethinkr">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="index.html">
+        <div class="brand-badge"><i class="bi bi-recycle"></i></div>
+        <div>
+          <span class="brand-title">ReThinkr</span>
+          <span class="brand-tagline">Don't dump it. Reimagine it.</span>
+        </div>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <!-- Center Autocomplete Search Bar -->
+        <div class="mx-auto my-2 my-lg-0 position-relative" style="max-width: 380px; width: 100%;">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" id="global-search-input" class="form-control bg-light border-start-0" placeholder="Search jar, shirt, cable, box..." autocomplete="off">
+          </div>
+          <div id="global-search-dropdown" class="autocomplete-dropdown"></div>
+        </div>
+
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-1">
+          <li class="nav-item">
+            <a class="nav-link " href="index.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link " href="search.html">Explore Ideas</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="submit.html">
+              <i class="bi bi-plus-circle-fill text-success me-1"></i>Submit Idea
+            </a>
+          </li>
+          <li class="nav-item ms-lg-2 mt-2 mt-lg-0" id="nav-user-area">
+            <!-- Populated dynamically by app.js -->
+            <a href="login.html" class="btn btn-outline-secondary btn-sm px-3 fw-semibold">Log In</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <main>
+
+  <div class="container py-5" style="max-width: 800px;">
+    <div class="text-center mb-4">
+      <span class="badge bg-success-subtle text-success text-uppercase fw-bold p-2 mb-2">Community Ideas Module</span>
+      <h2 class="fw-bold">Submit a Creative Reuse Idea</h2>
+      <p class="text-muted">Have a great way to repurpose an everyday household item? Share your step-by-step instructions. All submissions are moderated before going live.</p>
+    </div>
+
+    <div id="submit-auth-warning"></div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+      <form id="submit-idea-form">
+        <!-- Target Item -->
+        <div class="mb-4">
+          <label class="form-label fw-bold">Which Household Item Are You Repurposing? <span class="text-danger">*</span></label>
+          <select id="submit-item-id" class="form-select" required>
+            <!-- Populated dynamically by app.js -->
+          </select>
+          <div class="form-text">Choose from our curated 52 household items.</div>
+        </div>
+
+        <!-- Title -->
+        <div class="mb-4">
+          <label class="form-label fw-bold">Idea Title <span class="text-danger">*</span></label>
+          <input type="text" id="submit-title" class="form-control" placeholder="e.g. Mason Jar Herb Garden, No-Sew T-Shirt Market Bag" required>
+        </div>
+
+        <!-- Strategy & Difficulty Row -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label class="form-label fw-bold">Action Type <span class="text-danger">*</span></label>
+            <select id="submit-type" class="form-select" required>
+              <option value="reuse">Reuse (Repurpose at home)</option>
+              <option value="repair">Repair (Restore to working)</option>
+              <option value="recycle">Recycle (Material transform)</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold">Difficulty <span class="text-danger">*</span></label>
+            <select id="submit-difficulty" class="form-select" required>
+              <option value="Easy">Easy (Anyone can do it)</option>
+              <option value="Medium">Medium (Takes basic DIY)</option>
+              <option value="Advanced">Advanced (Requires craft skill)</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold">Time Required <span class="text-danger">*</span></label>
+            <input type="text" id="submit-time" class="form-control" placeholder="e.g. 15 mins, 1 hour" required>
+          </div>
+        </div>
+
+        <!-- Cost Row -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Cost Category</label>
+            <select id="submit-cost-level" class="form-select">
+              <option value="Free">Free (₹0 - items found at home)</option>
+              <option value="Low">Low Cost (< ₹100)</option>
+              <option value="Medium">Medium Cost (₹100 - ₹500)</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Estimated Cost (in INR ₹)</label>
+            <div class="input-group">
+              <span class="input-group-text">₹</span>
+              <input type="number" id="submit-cost" class="form-control" placeholder="0" min="0" value="0">
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="mb-4">
+          <label class="form-label fw-bold">Brief Summary & Practical Value <span class="text-danger">*</span></label>
+          <textarea id="submit-summary" class="form-control" rows="2" placeholder="Explain what the project makes and why it's useful..." required></textarea>
+        </div>
+
+        <!-- Materials Checklist Adder -->
+        <div class="mb-4">
+          <label class="form-label fw-bold">Tools & Materials Required <span class="text-danger">*</span></label>
+          <div class="input-group mb-2">
+            <input type="text" id="new-material-input" class="form-control" placeholder="Type a material (e.g. Scissors, Jute twine, Soil)...">
+            <button type="button" id="add-material-btn" class="btn btn-outline-success fw-bold"><i class="bi bi-plus-lg me-1"></i> Add Tool</button>
+          </div>
+          <div id="materials-tags-container" class="d-flex flex-wrap gap-2">
+            <!-- Dynamic tags -->
+          </div>
+        </div>
+
+        <!-- Steps Timeline Builder -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label fw-bold mb-0">Step-by-Step Instructions <span class="text-danger">*</span></label>
+            <button type="button" id="add-step-btn" class="btn btn-outline-primary btn-sm fw-bold"><i class="bi bi-plus-circle me-1"></i> Add Next Step</button>
+          </div>
+          <div id="steps-builder-container">
+            <div class="step-input-row mb-3 d-flex gap-2 align-items-start">
+              <span class="badge bg-primary rounded-circle p-2 fs-6 mt-1" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">1</span>
+              <textarea class="form-control step-text" rows="2" placeholder="Describe Step 1 in detail..." required></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image URL -->
+        <div class="mb-4">
+          <label class="form-label fw-bold">Photo or Image URL (Optional)</label>
+          <input type="url" id="submit-image-url" class="form-control" placeholder="https://images.unsplash.com/...">
+          <div class="form-text">Leave blank to use the item's default photo.</div>
+        </div>
+
+        <div class="alert alert-secondary small mb-4">
+          <i class="bi bi-shield-lock-fill text-primary me-1"></i> <b>Admin Moderation Policy:</b> Your submission will be saved with a <b>Pending</b> status. Our admin team reviews every entry for safety, clarity, and quality before publishing it live to all users.
+        </div>
+
+        <button type="submit" class="btn btn-success btn-lg w-100 fw-bold">
+          <i class="bi bi-send-check me-2"></i> Submit for Review
+        </button>
+      </form>
+    </div>
+  </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-rethinkr">
+    <div class="container">
+      <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="brand-badge"><i class="bi bi-recycle"></i></div>
+            <span class="brand-title text-white">ReThinkr</span>
+          </div>
+          <p class="text-secondary small mb-3">
+            "Don't dump it. Reimagine it." A searchable, item-first circular economy platform helping households transform everyday waste into practical resources.
+          </p>
+          <div class="d-flex gap-2">
+            <span class="badge bg-success-subtle text-success p-2"><i class="bi bi-patch-check-fill me-1"></i> 50+ Common Items</span>
+            <span class="badge bg-warning-subtle text-warning p-2"><i class="bi bi-stars me-1"></i> 150+ Curated Ideas</span>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3 col-lg-2">
+          <h6>Categories</h6>
+          <ul class="list-unstyled small">
+            <li class="mb-2"><a href="search.html?category=glass">Glass & Ceramic</a></li>
+            <li class="mb-2"><a href="search.html?category=paper">Paper & Cardboard</a></li>
+            <li class="mb-2"><a href="search.html?category=textiles">Textiles & Clothes</a></li>
+            <li class="mb-2"><a href="search.html?category=plastics">Plastics & Polymers</a></li>
+            <li class="mb-2"><a href="search.html?category=electronics">Electronics & Tech</a></li>
+            <li class="mb-2"><a href="search.html?category=metals">Metals & Cans</a></li>
+          </ul>
+        </div>
+
+        <div class="col-6 col-md-3 col-lg-2">
+          <h6>Platform</h6>
+          <ul class="list-unstyled small">
+            <li class="mb-2"><a href="search.html">Explore Catalog</a></li>
+            <li class="mb-2"><a href="submit.html">Submit Creative Idea</a></li>
+            <li class="mb-2"><a href="profile.html">My Saved Favorites</a></li>
+            <li class="mb-2"><a href="login.html">Sign In / Register</a></li>
+            <li class="mb-2"><a href="admin.html">Admin Moderation</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-4">
+          <h6>Project Synopsis Team</h6>
+          <p class="text-secondary small mb-2">Developed as an academic software engineering project based on the official project synopsis:</p>
+          <div class="card bg-dark border-secondary p-2 small text-light mb-3">
+            <div class="d-flex justify-content-between mb-1">
+              <span><b>Meghna Jain</b> (Lead, DB & PHP)</span>
+              <span class="text-muted">35717702024</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span><b>Aksh Mittal</b> (Front-end & UI)</span>
+              <span class="text-muted">35517702024</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span><b>Bhavya Goyal</b> (Auth & Admin)</span>
+              <span class="text-muted">36517702024</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span><b>Pari Khurana</b> (Content Curation)</span>
+              <span class="text-muted">52617702024</span>
+            </div>
+          </div>
+          <div class="small text-muted">
+            Tech Stack: PHP 8, MySQL 8, Bootstrap 5, ES6 JavaScript, HTML5, CSS3.
+          </div>
+        </div>
+      </div>
+
+      <div class="border-top border-secondary pt-3 text-center small text-secondary">
+        &copy; 2026 ReThinkr Project. Inspired by Circular Economy Principles & Sustainable Living.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Application Core Script -->
+  <script src="data/items_data.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
